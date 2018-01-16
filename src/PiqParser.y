@@ -12,28 +12,35 @@ import Data.Monoid((<>))
 %token 
   alias   { TokenAlias }
   eol     { TokenEol }
-  tokenType { TokenType aString} 
-  message {TokenMessage aString}
+  tokenType { TokenType aString } 
+  message { TokenMessage }
   identifier { TokenIdentifier aString }
-
+  openBrace { TokenOpenBrace } 
+  closeBrace { TokenCloseBrace }
 %% 
+
 Statements : Statement {[$1]} | Statements eol Statement {$3 : $1}
 Statement : Message {$1} | Alias {$1}
-Message : message Identifier {makeMessage $2}
+Message : message Identifier openBrace Fields closeBrace {makeMessage $2 $4}
 Alias : alias Identifier TokenType {makeAlias $2 $3}
 Identifier : identifier {$1}
-TokenType : tokenType   { $1}
+TokenType : tokenType   { $1 }
+Fields : Field {[$1]} | Fields eol Field { $3 : $1}
+Field : identifier TokenType { makeField $1 $2}
 
 {
 
-makeMessage (TokenIdentifier aString) = 
-  Message aString
+makeMessage (TokenIdentifier aString) fields = 
+  Message aString fields
 
 makeAlias (TokenIdentifier aString) (TokenType bString) 
   = Alias (aString) (aString)
 
+makeField (TokenIdentifier aString) (TokenType bString) 
+  = Field aString bString
+
 data TypeUnifier = 
-  Message String  
+  Message String [Field]
   | Alias String String deriving(Show)
 
 type Name = String 
@@ -46,10 +53,9 @@ data Token =
   | TokenIdentifier String
   | TokenRequired String 
   | TokenOptional String
-  | TokenOpenBrace String
-  | TokenCloseBrace String
+  | TokenOpenBrace | TokenCloseBrace
   | TokenEol
-  | TokenMessage String
+  | TokenMessage
   deriving (Show)
 
 parseError :: [Token] -> a 

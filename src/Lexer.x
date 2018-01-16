@@ -14,8 +14,6 @@ $eolW = [\r\n]
 $space = \b
 $tab = \t
 $semicolon = [\;]
-$openBrace = [\{]
-$closeBrace = [\}]
 
 tokens :- 
   $white+   ;
@@ -27,11 +25,11 @@ tokens :-
   int               { \s -> TokenType s }
   bool              { \s -> TokenType s }
   uint64            { \s -> TokenType s }
-  message           { \s -> TokenMessage s}
+  message           { \s -> TokenMessage}
   required          { \s -> TokenRequired s} 
   optional          { \s -> TokenOptional s}
-  openBrace         { \s -> TokenOpenBrace s}
-  closeBrace        { \s -> TokenCloseBrace s}
+  \(                { \s -> TokenOpenBrace}
+  \)                { \s -> TokenCloseBrace}
   $alpha [$alpha $digit]+ {\s -> TokenIdentifier s }
 
 {
